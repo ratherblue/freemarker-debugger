@@ -12,8 +12,8 @@
   "styleClassPrefix": "freemarker-debug",
   "queryParamKey": "debugQuery",
   "includeStyles": true,
-  "ignoredKeys": ["class"], <#-- ignore keys that exactly match these values. Case-sensitive -->
-  "ignoredPatterns": ["org.springframework."] <#-- ignore keys that start with these values. Case-sensitive -->
+  "ignoredKeys": ["class"], <#-- Ignore keys that exactly match these values. Case-sensitive -->
+  "ignoredPatterns": ["org.springframework."] <#-- Ignore keys that start with these values. Case-sensitive -->
 } />
 
 <#---

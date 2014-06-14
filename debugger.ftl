@@ -1,7 +1,33 @@
 <#ftl strip_text=true />
+
 <#---
-  Macros and functions used to generate a tabular view of the data model
-  @namespace debugger
+  @author      Evangelia Dendramis <edendramis@gmail.com>
+  @homepage    https://github.com/edendramis/freemarker-debugger/
+  @license     MIT
+  @version     1.0
+
+  @name        freemarker-debugger
+  @description Macros and functions used to generate a tabular view of the .locals, .main, and .data model.
+
+  @see				 http://freemarker.org/docs/ref_specvar.html
+
+  @namespace   debugger
+
+  Default usage (expands the top-level properties from .data_model):
+
+    <#import "debugger.ftl" as debugger />
+
+    <@debugger.debug />
+
+  More examples:
+
+    Expands first and second-level properties for the .locals (local variables and macro parameters)
+    <@debugger.debug debugObject=.locals depth=2 />
+
+
+    <@debugger.debugDynamic debugObject=.locals depth=2 />
+
+
 -->
 
 
@@ -458,6 +484,7 @@
 
 
 <#---
+  Handles the output of hash_ex and sequences
   @param key
   @param value
   @param depth	How deep to expand the object

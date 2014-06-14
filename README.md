@@ -21,15 +21,32 @@ Basic settings are included to allow for configuration flexibility:
       "styleClassPrefix": "freemarker-debug",
       "queryParamKey": "debugQuery",
       "includeStyles": true,
-      "showSpringFramework": false
+      "ignoredKeys": ["class"],
+      "ignoredPatterns": ["org.springframework."]
     } />
 
-* `styleClassPrefix` controls what all the CSS classes are prefixed with. While it is unlikely you will have existing styles that conflict with `freemarker-debug`, this option is included in case customization is preferred.
-### Example
-* `queryParamKey` controls what query string dynamic links are built with. It is recommended that this value be customized in order to obscure what parameter your project will use. (Projects should be configured to prevent the debugger to run in production.)
-* `includeStyles` is a flag to choose whether or not the default CSS styles should be included. The styles only affect the debug output and are added so that it is readable no matter what the design of the page is. 
+`styleClassPrefix` 
+* Controls what all the CSS classes are prefixed with. 
+* While it is unlikely you will have existing styles that conflict with `freemarker-debug`, this option is included in case customization is preferred.
+
+`queryParamKey`
+* Controls what query string dynamic links are built with. 
+* It is recommended that this value be customized in order to obscure what parameter your project will use. (Projects should be configured to prevent the debugger to run in production.)
+
+`includeStyles` 
+* Flag to determine whether or not the default CSS styles should be included. 
+* The styles only affect the debug output and are added so that it is readable no matter what the design of the page is. 
+
+`ignoredKeys` 
+* Keys exactly matching any of these values will not be output.
+* Case-sensitive
+
+`ignoredPatterns` 
+* Keys **starting** with any of these values will not be output. 
+* Case sensitive.
+
 ## License
-* `showSpringFramework`
+
 Copyright 2014 Evangelia Dendramis
 
 Licensed under the MIT License: http://opensource.org/licenses/MIT

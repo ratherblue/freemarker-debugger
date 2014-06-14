@@ -62,8 +62,8 @@
       </#if>
       <div class="${settings.styleClassPrefix}-debug-title">
         <a href="${baseUrl() + settings.queryParamKey + "=" + (parentQuery!'')?url}">.data_model${parentQuery?xhtml}</a><#-- prevent white space
-        -->${(currentQuery!'')?xhtml}:
-      </div> <#-- prevent injection -->
+        -->${(currentQuery!'')?xhtml}: <#-- prevent injection -->
+      </div>
 
       <#attempt>
         <@debugTable
@@ -73,6 +73,7 @@
       <#recover>
         <div class="${settings.styleClassPrefix}-error">
           <strong>Error:</strong> Unable to parse ${debugQuery?xhtml}
+          <p><strong>Error code:</strong> ${.error}</p>
         </div>
       </#attempt>
 
@@ -239,6 +240,11 @@
         color: #C00;
         margin: 5px 0;
       }
+
+      .${classPrefix}-error p {
+        font-size: 14px;
+      }
+
     </style>
   </#compress>
 </#macro>
@@ -381,7 +387,9 @@
     <#-- always check string last since some objects will evaluate
          to string as well as another type -->
     <#elseif value?is_string>
-      ${value?xhtml}<#-- prevent injection -->
+      <#-- show full value in source -->
+      <!-- ${value?xhtml} -->
+      ${truncateString(value?xhtml)}<#-- prevent injection -->
     </#if>
 
   <#else>
@@ -470,7 +478,7 @@
     <#-- truncate really long names, but show full name in source -->
     <#if (staticValue?length > 100)>
       <!-- ${staticValue!} -->
-      <#local staticValue = staticValue?substring(0, 100) + "…" />
+      <#local staticValue = truncateString(staticValue) />
     </#if>
 
     <#if dynamic>
@@ -481,3 +489,20 @@
   </#if>
 
 </#macro>
+
+
+<#---
+  Truncates large strings
+  @param string
+  @param maxLength The length to truncate the string to
+  @returns string
+-->
+<#function truncateString string maxLength=100>
+
+  <#if string?is_string && (string?length > maxLength)>
+    <#return string?substring(0, 100) + "…" />
+  </#if>
+
+  <#return string />
+
+</#function>

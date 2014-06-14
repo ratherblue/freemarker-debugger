@@ -45,11 +45,12 @@ Basic settings are included to allow for configuration flexibility:
 * Keys **starting** with any of these values will not be output. 
 * Case sensitive.
 
-### Example settings
+### Example setting customization
 
     <#import "debugger.ftl" as debugger />
     
     <#assign settings["styleClassPrefix"] = "custom-prefix" in debugger />
+    
     <@debugger.debug />
 
 ## License

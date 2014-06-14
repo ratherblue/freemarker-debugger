@@ -12,3 +12,10 @@ Debugging in Freemarker made easy. Manually or dynamically traverse through obje
     
     <#-- Adds links to traversable elements -->
     <@debugger.debugDynamic />
+
+
+## License
+
+Copyright 2014 Evangelia Dendramis
+
+Licensed under the MIT License: http://opensource.org/licenses/MIT

@@ -42,8 +42,9 @@
   "ignoredPatterns": ["org.springframework."] <#-- Ignore keys that start with these values. Case-sensitive -->
 } />
 
+
 <#---
-  Parameter used when dynamically expanding objects through links
+  Value of parameter used when dynamically expanding objects through links
 -->
 <#assign debugQuery = (RequestParameters[settings.queryParamKey]!'')?trim />
 

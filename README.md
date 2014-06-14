@@ -29,7 +29,7 @@ Basic settings are included to allow for configuration flexibility:
 * `queryParamKey` controls what query string dynamic links are built with. It is recommended that this value be customized in order to obscure what parameter your project will use. (Projects should be configured to prevent the debugger to run in production.)
 * `includeStyles` is a flag to choose whether or not the default CSS styles should be included. The styles only affect the debug output and are added so that it is readable no matter what the design of the page is. 
 ## License
-
+* `showSpringFramework`
 Copyright 2014 Evangelia Dendramis
 
 Licensed under the MIT License: http://opensource.org/licenses/MIT

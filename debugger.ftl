@@ -306,7 +306,7 @@
   <#local isComplex = isComplexObject(value) />
 
   <#if isComplex>
-    <#if (depth > 1) || dynamic>
+    <#if ((depth > 1) || dynamic) && value?has_content>
       <#local expandedClass = " " + settings.styleClassPrefix + "-expanded" />
     </#if>
   </#if>
@@ -363,6 +363,11 @@
   <#-- TODO: See what methods can be expanded -->
   <#if value?is_method>
     method()
+
+  <#-- MACRO -->
+  <#elseif value?is_macro>
+    macro/function
+
   <#elseif value?has_content>
 
     <#-- NUMBER -->

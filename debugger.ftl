@@ -12,7 +12,8 @@
   "styleClassPrefix": "freemarker-debug",
   "queryParamKey": "debugQuery",
   "includeStyles": true,
-  "showSpringFramework": false <#-- show/hide properties starting with "org.springframework." -->
+  "ignoredKeys": ["class"], <#-- ignore keys that exactly match these values. Case-sensitive -->
+  "ignoredPatterns": ["org.springframework."] <#-- ignore keys that start with these values. Case-sensitive -->
 } />
 
 <#---
@@ -292,7 +293,7 @@
 -->
 <#macro properties key value depth dynamic queryParam="">
   <#-- ignore spring framework properties -->
-  <#if key?is_string && (!settings.showSpringFramework) && key?starts_with("org.springframework.")>
+  <#if ignoreKey(key)>
     <#return />
   </#if>
 
@@ -321,6 +322,29 @@
   </tr>
 </#macro>
 
+
+<#---
+  Determines if a key should be ignored according to the settings.
+  @param key
+  @returns boolean
+-->
+<#function ignoreKey key>
+
+  <#if key?is_string>
+    <#if settings.ignoredKeys?seq_contains(key)>
+      <#return true />
+    </#if>
+
+    <#list settings.ignoredPatterns as pattern>
+      <#if key?starts_with(pattern)>
+        <#return true />
+      </#if>
+    </#list>
+  </#if>
+
+  <#return false />
+
+</#function>
 
 <#---
   Displays a simple value (not hash_ex or sequence)

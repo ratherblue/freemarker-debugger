@@ -192,7 +192,7 @@
         margin: 0;
       }
 
-      .${classPrefix}-table tr:hover td {
+      .${classPrefix}-table tr:hover > td {
         background-color: rgba(0, 0, 255, .1);
       }
 
@@ -208,6 +208,11 @@
         vertical-align: top;
         border: 1px solid #000;
       }
+
+      .${classPrefix}-table td {
+        background-color: #FFF;
+      }
+
 
       .${classPrefix}-table td.${classPrefix}-expanded {
         padding: 0;
@@ -426,7 +431,7 @@
     <#-- DATE -->
     <#-- TODO: format -->
     <#elseif value?is_date>
-      date
+      date: ${value}
 
     <#-- BOOLEAN -->
     <#elseif value?is_boolean>

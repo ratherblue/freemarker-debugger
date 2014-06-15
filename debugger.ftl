@@ -86,7 +86,7 @@
   <div class="${settings.styleClassPrefix}-wrapper">
     <#if debugQuery?has_content>
 
-      <#local root = rootData(debugQuery) />
+      <#local root = getDebugRoot(debugQuery) />
       <#local debugObject = debugObjectFromUrl(root.object, debugQuery) />
 
       <#if debugObject?is_number && debugObject == -1>
@@ -459,7 +459,7 @@
 -->
 <#function getDebugUrl queryParam>
 
-  <#local url = baseUrl() />
+  <#local url = getBaseUrl() />
 
   <#if debugQuery?has_content>
     <#local url = url + debugQuery + queryParam />
@@ -476,7 +476,7 @@
   Determine the base debug url
   @returns string
 -->
-<#function baseUrl>
+<#function getBaseUrl>
 
   <#local url = "?" />
 
@@ -635,7 +635,7 @@
   @param query
   @returns object
 -->
-<#function rootData query>
+<#function getDebugRoot query>
 
   <#-- default to data_model -->
   <#local object = .data_model />
@@ -734,10 +734,10 @@
 -->
 <#function getTitleLink query>
 
-  <#local root = rootData(query) />
+  <#local root = getDebugRoot(query) />
   <#local convertedArray = convertArray(query) />
 
-  <#local url = baseUrl() + root.title />
+  <#local url = getBaseUrl() + root.title />
 
   <#local urlList = [{
       "title": root.title,

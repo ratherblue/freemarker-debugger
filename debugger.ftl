@@ -60,10 +60,13 @@
     <@tableStyles />
   </#if>
 
+  <#local title = varClass(debugObject) />
+
   <div class="${settings.styleClassPrefix}-wrapper">
     <@debugTable
         debugObject=debugObject
-        depth=depth />
+        depth=depth
+        title=title!'' />
   </div>
 </#macro>
 
@@ -82,36 +85,32 @@
 
   <div class="${settings.styleClassPrefix}-wrapper">
     <#if debugQuery?has_content>
-      <#if debugQuery?contains("[")>
-        <#-- allow the ability to traverse back up -->
-        <#local parentQuery = debugQuery?substring(0, debugQuery?last_index_of("[")) />
-        <#local currentQuery = debugQuery?substring(debugQuery?last_index_of("[")) />
-      </#if>
-      <div class="${settings.styleClassPrefix}-debug-title">
-        <a href="${baseUrl() + settings.queryParamKey + "=" + (parentQuery!'')?url}">.data_model${parentQuery?xhtml}</a><#-- prevent white space
-        -->${(currentQuery!'')?xhtml}: <#-- prevent injection -->
-      </div>
 
-      <#attempt>
-        <@debugTable
-            debugObject=(".data_model" + debugQuery?j_string)?eval <#-- #yolo -->
-            depth=depth
-            dynamic=true />
-      <#recover>
+      <#local root = rootData(debugQuery) />
+      <#local debugObject = debugObjectFromUrl(root.object, debugQuery) />
+
+      <#if debugObject?is_number && debugObject == -1>
         <div class="${settings.styleClassPrefix}-error">
           <strong>Error:</strong> Unable to parse ${debugQuery?xhtml}
-          <p><strong>Error code:</strong> ${.error}</p>
         </div>
-      </#attempt>
-
+      <#else>
+        <@debugTable
+            debugObject=debugObject
+            depth=depth
+            dynamic=true
+            title=getTitleLink(debugQuery) />
+      </#if>
     <#else>
       <@debugTable
           debugObject=.data_model
           depth=depth
-          dynamic=true />
+          dynamic=true
+          title=[{"title": ".data_model", "url": ""}]
+          queryParam=".data_model" />
     </#if>
   </div>
 </#macro>
+
 
 <#---
   Prints out expandable objects (hash_ex, sequences) in tabular form
@@ -119,11 +118,12 @@
   @param depth	How deep to expand the object
   @param dynamic	Boolean to make expandable objects a link to quickly drill-down into data
   @param queryParam Parameter used in query string for direct debugging
+  @param title Title of the section
 -->
-<#macro debugTable debugObject depth dynamic=false queryParam="">
+<#macro debugTable debugObject depth dynamic=false queryParam="" title="">
 
   <#if isComplexObject(debugObject)>
-    <@tableWrapper>
+    <@tableWrapper title=title titleUrl=getDebugUrl(queryParam)>
       <#if debugObject?is_hash_ex>
         <#list debugObject?keys?sort as key>
           <@properties
@@ -131,7 +131,7 @@
               value=(debugObject[key])!""
               depth=depth
               dynamic=dynamic
-              queryParam=queryParam />
+              queryParam=buildQueryParam(key, queryParam, dynamic) />
         </#list>
       <#elseif debugObject?is_sequence>
         <#list debugObject as obj>
@@ -140,7 +140,7 @@
               value=obj!""
               depth=depth
               dynamic=dynamic
-              queryParam=queryParam />
+              queryParam=buildQueryParam(obj_index, queryParam, dynamic) />
         </#list>
       </#if>
     </@tableWrapper>
@@ -149,6 +149,7 @@
   </#if>
 
 </#macro>
+
 
 <#---
   Basic styles for the debug table
@@ -171,17 +172,6 @@
       .${classPrefix}-wrapper a:hover {
         text-decoration: underline;
       }
-
-      .${classPrefix}-debug-title {
-        display: block;
-        font-size: 16px;
-        font-weight: bold;
-      }
-
-      .${classPrefix}-debug-title a {
-        display: inline-block;
-      }
-
 
       .${classPrefix}-table {
         border-spacing: 0;
@@ -251,6 +241,10 @@
         display: block;
       }
 
+      .${classPrefix}-table .${classPrefix}-top-link a {
+        display: inline-block;
+      }
+
       .${classPrefix}-empty {
         color: #999;
       }
@@ -259,7 +253,7 @@
         display: block;
       }
 
-      .${classPrefix}-expanded a {
+      .${classPrefix}-expanded > a {
         padding: 4px 8px;
       }
 
@@ -279,11 +273,38 @@
 
 <#---
   Shortcut for table structure
+  @param title
+  @param titleUrl
+  FIXME: this is ugly
 -->
-<#macro tableWrapper>
+<#macro tableWrapper title="" titleUrl="">
   <#compress>
     <table class="${settings.styleClassPrefix}-table">
       <thead>
+        <#if title?has_content>
+          <tr>
+            <th class="${settings.styleClassPrefix}-col-left" colspan="2">
+              <#-- TODO: ugly logic, fix -->
+              <#if title?is_sequence>
+                <div class="${settings.styleClassPrefix}-top-link">
+                  <#list title as x>
+                    <#if x_has_next>
+                      <a href="${x.url?xhtml}">${x.title?xhtml}</a><#t/>
+                    <#else>
+                      ${x.title?xhtml}<#t/>
+                    </#if>
+                  </#list>
+                </div>
+              <#elseif titleUrl?has_content>
+                <a href='${titleUrl?xhtml}'>
+                  ${title?xhtml}
+                </a>
+              <#else>
+                ${title?xhtml}
+              </#if>
+            </th>
+          </tr>
+        </#if>
         <tr>
           <th class="${settings.styleClassPrefix}-col-left">Key</th>
           <th class="${settings.styleClassPrefix}-col-right">Value</th>
@@ -339,7 +360,7 @@
   </#if>
 
   <tr>
-    <td class="${settings.styleClassPrefix}-col-left">${key}</td>
+    <td class="${settings.styleClassPrefix}-col-left">${key?xhtml}</td>
     <td class="${settings.styleClassPrefix}-col-right${expandedClass!}">
       <#if isComplex>
         <@complexValue
@@ -422,7 +443,7 @@
     <#elseif value?is_string>
       <#-- show full value in source -->
       <!-- ${value?xhtml} -->
-      ${truncateString(value?xhtml)}<#-- prevent injection -->
+      ${truncateString(value)?xhtml}<#-- prevent injection -->
     </#if>
 
   <#else>
@@ -436,14 +457,14 @@
   @param queryParam Parameter used in query string for direct debugging
   @returns string
 -->
-<#function debugUrl queryParam>
+<#function getDebugUrl queryParam>
 
   <#local url = baseUrl() />
 
   <#if debugQuery?has_content>
-    <#local url = url + settings.queryParamKey + "=" + debugQuery?xhtml + queryParam />
+    <#local url = url + debugQuery + queryParam />
   <#else>
-    <#local url = url + settings.queryParamKey + "=" + queryParam />
+    <#local url = url + queryParam />
   </#if>
 
   <#return url />
@@ -456,17 +477,18 @@
   @returns string
 -->
 <#function baseUrl>
-  <#local urlBase = "?" />
+
+  <#local url = "?" />
 
   <#if RequestParameters?has_content>
     <#list RequestParameters?keys as paramKey>
       <#if paramKey != settings.queryParamKey>
-        <#local urlBase = urlBase + paramKey + "=" + RequestParameters[paramKey] + "&" />
+        <#local url = url + paramKey + "=" + RequestParameters[paramKey] + "&" />
       </#if>
     </#list>
   </#if>
 
-  <#return urlBase?xhtml /><#-- prevent injection -->
+  <#return (url + settings.queryParamKey + "=") />
 
 </#function>
 
@@ -474,11 +496,17 @@
   Builds the parameter to use in the query string for debugging
   @param key
   @param debugQueryPrefix
+  @param dynamic
   @returns string
 -->
-<#function buildQueryParam key debugQueryPrefix="">
+<#function buildQueryParam key debugQueryPrefix="" dynamic=false>
 
-  <#local urlParam = "[" + (key?is_number)?string(key?url, "'" + key?url + "'") + "]" />
+  <#-- only build if it is debugDynamic -->
+  <#if !dynamic>
+    <#return "" />
+  </#if>
+
+  <#local urlParam = "[" + (key?is_number)?string(key, '"' + key + '"') + "]" />
 
   <#return (debugQueryPrefix + urlParam) />
 
@@ -495,28 +523,33 @@
 -->
 <#macro complexValue key value depth dynamic queryParam="">
 
+  <#-- store class name -->
+  <#if value?is_string && value?is_hash_ex>
+    <#local className = varClass(value) />
+    <#local fullValue = value /><#-- prevent injection -->
+    <#local shortValue = truncateString(value) /><#-- prevent injection -->
+  </#if>
+
   <#if (depth > 1) && (value?has_content)>
     <@debugTable
         debugObject=value
         depth=(depth - 1)
         dynamic=dynamic
-        queryParam=buildQueryParam(key, queryParam) />
+        queryParam=queryParam
+        title=className!'' />
   <#else>
+
     <#local staticValue = (value?is_hash_ex)?string("hash_ex", "sequence") + "(" + value?size + ")" />
 
     <#-- show class name for hash_ex -->
     <#if value?is_string && value?is_hash_ex>
-      <#local staticValue = staticValue + " " + value?xhtml /><#-- prevent injection -->
-    </#if>
-
-    <#-- truncate really long names, but show full name in source -->
-    <#if (staticValue?length > 100)>
-      <!-- ${staticValue!} -->
-      <#local staticValue = truncateString(staticValue) />
+      <#-- show full value in source -->
+      <!-- ${fullValue!} -->
+      <#local staticValue = staticValue + " " + (shortValue!'') />
     </#if>
 
     <#if dynamic>
-      <a href="${debugUrl(buildQueryParam(key, queryParam))}">${staticValue}</a>
+      <a href='${getDebugUrl(queryParam)?xhtml}'>${staticValue}</a>
     <#else>
       ${staticValue}
     </#if>
@@ -538,5 +571,194 @@
   </#if>
 
   <#return string />
+
+</#function>
+
+
+<#---
+  Helper macro that outputs a variable type
+  @param var
+-->
+<#macro variableType var>
+  ${var?is_string?string("is_string<br/>", "")}
+  ${var?is_number?string("is_number<br/>", "")}
+  ${var?is_boolean?string("is_date<br/>", "")}
+  ${var?is_date?string("is_date<br/>", "")}
+  ${var?is_method?string("is_method<br/>", "")}
+  ${var?is_transform?string("is_transform<br/>", "")}
+  ${var?is_macro?string("is_macro<br/>", "")}
+  ${var?is_hash?string("is_hash<br/>", "")}
+  ${var?is_hash_ex?string("is_hash_ex<br/>", "")}
+  ${var?is_sequence?string("is_sequence<br/>", "")}
+  ${var?is_collection?string("is_collection<br/>", "")}
+  ${var?is_enumerable?string("is_enumerable<br/>", "")}
+  ${var?is_indexable?string("is_indexable<br/>", "")}
+  ${var?is_directive?string("is_directive<br/>", "")}
+  ${var?is_node?string("is_node<br/>", "")}
+  ${var?has_content?string("has_content<br/>", "")}
+</#macro>
+
+
+<#---
+  Gets the class of a var if applicable
+  @param value
+  @returns string
+-->
+<#function varClass value>
+
+  <#if value?is_hash_ex && ((value.class)??)>
+    <#return value.class />
+  </#if>
+
+  <#return "" />
+
+</#function>
+
+
+<#---
+  Rebuild the debug object from the url parameter.
+  @param root
+  @param query
+-->
+<#function debugObjectFromUrl root query>
+
+    <#local convertedArray = convertArray(query) />
+
+    <#return validObject(root, convertedArray) />
+
+</#function>
+
+
+<#---
+  Determine the debug root information based on the query
+
+  @param query
+  @returns object
+-->
+<#function rootData query>
+
+  <#-- default to data_model -->
+  <#local object = .data_model />
+  <#local title = ".data_model" />
+
+  <#-- .locals -->
+  <#if query?starts_with(".locals")>
+    <#local object = .locals />
+    <#local title = ".locals" />
+
+  <#-- .main -->
+  <#elseif query?starts_with(".main")>
+    <#local object = .main />
+    <#local title = ".main" />
+
+  <#-- .namespace -->
+  <#elseif query?starts_with(".namespace")>
+    <#local object = .namespace />
+    <#local title = ".namespace" />
+
+  </#if>
+
+  <#return { "object": object, "title": title } />
+
+</#function>
+
+
+<#---
+  Converts the debug query into an array of strings and numbers
+
+  @param query
+  @returns array
+-->
+<#function convertArray query>
+
+  <#if query?contains("[") && query?contains("]")>
+    <#-- chop off front and back brackets, then split on '][' to form array -->
+    <#local query = query?substring(
+        query?index_of("[") + 1,
+        query?last_index_of("]")
+      ) />
+
+    <#if query?contains("][")>
+      <#local queryArray = query?split("][") />
+     <#else>
+       <#local queryArray = [query] />
+    </#if>
+
+    <#-- remove quotes for strings, convert others to numbers -->
+    <#local convertedArray = [] />
+    <#list queryArray as q>
+      <#if q?starts_with('"')>
+        <#local str = q?substring(1, q?length - 1) />
+        <#local convertedArray = convertedArray + [str?j_string] />
+      <#else>
+        <#local convertedArray = convertedArray + [q?number] />
+      </#if>
+    </#list>
+
+    <#return convertedArray />
+
+  <#else>
+    <#return [] />
+  </#if>
+
+</#function>
+
+
+<#---
+  Function to check if the value we're debugging exists
+  @param debugParent
+  @param array
+  @returns boolean
+-->
+<#function validObject debugParent array>
+
+  <#local obj = debugParent />
+
+  <#list array as x>
+    <#if (obj[x]??)>
+      <#local obj = obj[x] />
+    <#else>
+      <#return -1 />
+    </#if>
+  </#list>
+
+  <#return obj />
+
+</#function>
+
+
+<#---
+  Builds a top-level list of links for easier traversal
+  @param query
+  @returns array
+-->
+<#function getTitleLink query>
+
+  <#local root = rootData(query) />
+  <#local convertedArray = convertArray(query) />
+
+  <#local url = baseUrl() + root.title />
+
+  <#local urlList = [{
+      "title": root.title,
+      "url": url
+    }] />
+
+  <#list convertedArray as k>
+    <#if k?is_string>
+      <#local title = '["' + k + '"]' />
+    <#else>
+      <#local title = '[' + k?string + ']' />
+    </#if>
+
+    <#local url = url + title />
+
+    <#local urlList = urlList + [{
+        "title": title,
+        "url": url
+      }] />
+  </#list>
+
+  <#return urlList />
 
 </#function>

@@ -54,7 +54,7 @@ Basic settings are included to allow for configuration flexibility:
         "styleClassPrefix": "custom-prefix",
         "ignoredKeys": ["class", "equals"]
       } />
-    <#assign settings = newSettings in debugger />
+    <#assign settings = customSettings in debugger />
 
     <@debugger.debug />
 

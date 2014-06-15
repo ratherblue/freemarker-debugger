@@ -48,7 +48,13 @@ Basic settings are included to allow for configuration flexibility:
 
     <#import "debugger.ftl" as debugger />
 
-    <#assign settings["styleClassPrefix"] = "custom-prefix" in debugger />
+    <#-- This will change all css classes to be prefixed
+         with "custom-prefix" and ignore any keys equal to "class" or "equals" -->
+    <#assign customSettings = debugger.settings + {
+        "styleClassPrefix": "custom-prefix",
+        "ignoredKeys": ["class", "equals"]
+      } />
+    <#assign settings = newSettings in debugger />
 
     <@debugger.debug />
 

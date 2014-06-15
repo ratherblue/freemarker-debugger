@@ -36,10 +36,10 @@
 -->
 <#assign settings = {
   "styleClassPrefix": "freemarker-debug",
-  "queryParamKey": "debugQuery",
-  "includeStyles": true,
-  "ignoredKeys": ["class"], <#-- Ignore keys that exactly match these values. Case-sensitive -->
-  "ignoredPatterns": ["org.springframework."] <#-- Ignore keys that start with these values. Case-sensitive -->
+  "queryParamKey":    "debugQuery",
+  "includeStyles":    true,
+  "ignoredKeys":      ["class"], <#-- Ignore keys that exactly match these values. Case-sensitive -->
+  "ignoredPatterns":  ["org.springframework."] <#-- Ignore keys that start with these values. Case-sensitive -->
 } />
 
 
@@ -391,7 +391,8 @@
   <#if value?is_method>
     method()
 
-  <#-- MACRO -->
+  <#-- MACRO/FUNCTIONS -->
+  <#-- ?has_content evaluates to false for these -->
   <#elseif value?is_macro>
     macro/function
 

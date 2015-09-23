@@ -431,7 +431,7 @@
     <#-- DATE -->
     <#-- TODO: format -->
     <#elseif value?is_date>
-      date: ${value}
+      date: ${value?date}
 
     <#-- BOOLEAN -->
     <#elseif value?is_boolean>

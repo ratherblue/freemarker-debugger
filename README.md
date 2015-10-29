@@ -4,25 +4,28 @@ Debugging in FreeMarker made easy! Manually or dynamically traverse through loca
 
 ## Usage
 
-    <#import "debugger.ftl" as debugger />
+```ftl
+<#import "debugger.ftl" as debugger />
 
-    <#-- Basic usage. Creates a table of the top-level data model objects -->
-    <@debugger.debug />
+<#-- Basic usage. Creates a table of the top-level data model objects -->
+<@debugger.debug />
 
-    <#-- Adds links to traversable elements -->
-    <@debugger.debugDynamic />
+<#-- Adds links to traversable elements -->
+<@debugger.debugDynamic />
+```
 
 ## Settings
 
 Basic settings are included to allow for configuration flexibility:
-
-    <#assign settings = {
-      "styleClassPrefix": "freemarker-debug",
-      "queryParamKey": "debugQuery",
-      "includeStyles": true,
-      "ignoredKeys": ["class"],
-      "ignoredPatterns": ["org.springframework."]
-    } />
+```ftl
+<#assign settings = {
+  "styleClassPrefix": "freemarker-debug",
+  "queryParamKey": "debugQuery",
+  "includeStyles": true,
+  "ignoredKeys": ["class"],
+  "ignoredPatterns": ["org.springframework."]
+} />
+```
 
 `styleClassPrefix`
 * Controls what all the CSS classes are prefixed with.
@@ -46,18 +49,19 @@ Basic settings are included to allow for configuration flexibility:
 
 ### Example setting customization
 
-    <#import "debugger.ftl" as debugger />
+```ftl
+<#import "debugger.ftl" as debugger />
 
-    <#-- This will change all css classes to be prefixed
-         with "custom-prefix" and ignore any keys equal to "class" or "equals" -->
-    <#assign customSettings = debugger.settings + {
-        "styleClassPrefix": "custom-prefix",
-        "ignoredKeys": ["class", "equals"]
-      } />
-    <#assign settings = customSettings in debugger />
+<#-- This will change all css classes to be prefixed
+     with "custom-prefix" and ignore any keys equal to "class" or "equals" -->
+<#assign customSettings = debugger.settings + {
+    "styleClassPrefix": "custom-prefix",
+    "ignoredKeys": ["class", "equals"]
+  } />
+<#assign settings = customSettings in debugger />
 
-    <@debugger.debug />
-
+<@debugger.debug />
+```
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)

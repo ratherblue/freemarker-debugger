@@ -60,6 +60,4 @@ Basic settings are included to allow for configuration flexibility:
 
 ## License
 
-Copyright 2014 Evangelia Dendramis
-
-Licensed under the MIT License: http://opensource.org/licenses/MIT
+[MIT](http://opensource.org/licenses/MIT)

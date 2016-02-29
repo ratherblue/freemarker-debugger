@@ -1,7 +1,7 @@
 <#ftl strip_text=true />
 
 <#---
-  @author      Evangelia Dendramis <edendramis@gmail.com>
+  @author      <edendramis@gmail.com>
   @homepage    https://github.com/edendramis/freemarker-debugger/
   @license     MIT
   @version     1.0

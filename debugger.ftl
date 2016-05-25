@@ -1,7 +1,7 @@
 <#ftl strip_text=true />
 
 <#---
-  @homepage    https://github.com/edendramis/freemarker-debugger/
+  @homepage    https://github.com/ratherblue/freemarker-debugger/
   @license     MIT
   @version     1.0
 

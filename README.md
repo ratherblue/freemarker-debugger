@@ -2,6 +2,8 @@
 
 Debugging in FreeMarker made easy! Manually or dynamically traverse through local and namespaced FreeMarker variables or objects from the data model sent to the FreeMarker view.
 
+https://freemarker.apache.org/
+
 ## Usage
 
 ```ftl
